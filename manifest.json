@@ -1,6 +1,6 @@
 {
-    "id": "pixso-plugin-id",
-    "name": "pixso-plugin",
+    "id": "pixso-page-exporter",
+    "name": "页面数据导出",
     "ui": "dist/ui.html",
     "main": "dist/main.js"
 }
