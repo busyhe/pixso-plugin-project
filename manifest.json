@@ -1,0 +1,6 @@
+{
+    "id": "pixso-plugin-id",
+    "name": "pixso-plugin",
+    "ui": "dist/ui.html",
+    "main": "dist/main.js"
+}
