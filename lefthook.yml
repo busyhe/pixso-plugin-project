@@ -2,6 +2,6 @@ prepare-commit-msg:
   commands:
     commitizen:
       interactive: true
-      run: npx czg --hook
+      run: pnpm exec czg --hook
       env:
         LEFTHOOK: "0"

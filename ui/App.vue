@@ -60,10 +60,16 @@ const handleDownload = () => {
   downloadJSON(exportedData.value, filename);
 };
 
-// Handle download raw data
+// Handle download raw selection data
 const handleDownloadRaw = () => {
-  if (!rawData.value) return;
-  downloadJSON(rawData.value, 'pixso-raw.json');
+  parent.postMessage(
+    {
+      pluginMessage: {
+        type: 'export-raw',
+      },
+    },
+    '*'
+  );
 };
 
 // Cancel
@@ -92,6 +98,9 @@ window.onmessage = (event) => {
     } else {
       exportedData.value = msg.data;
     }
+  } else if (msg.type === 'raw-result') {
+    // Directly download raw selection data
+    downloadJSON(msg.data, 'pixso-selection-raw.json');
   } else if (msg.type === 'error') {
     loading.value = false;
     error.value = msg.message;
@@ -101,8 +110,6 @@ window.onmessage = (event) => {
 
 <template>
   <div class="container">
-    <h2>页面数据导出</h2>
-
     <!-- Export Format -->
     <div class="section">
       <label class="section-title">导出格式</label>
@@ -191,9 +198,9 @@ window.onmessage = (event) => {
       <button
         class="btn warning"
         @click="handleDownloadRaw"
-        :disabled="!rawData || loading"
+        :disabled="loading"
       >
-        下载原始数据
+        下载 Selection 原始数据
       </button>
       <button class="btn" @click="cancel">取消</button>
     </div>

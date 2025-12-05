@@ -240,6 +240,7 @@ async function extractNodeData(node, options = {}) {
  */
 async function getExportData(options = {}) {
   const selection = pixso.currentPage.selection;
+  // console.debug('[DEBUG__pixso-plugin-project/main.js-selection]', selection)
 
   if (selection.length === 0) {
     // If nothing selected, export current page
@@ -273,6 +274,7 @@ async function getExportData(options = {}) {
 // Message handler
 pixso.ui.onmessage = async (msg) => {
   if (msg.type === 'export-pixso') {
+    console.log('export-pixso');
     // Export as raw Pixso JSON
     const data = await getExportData({
       exportImages: msg.exportImages || false,
@@ -302,6 +304,72 @@ pixso.ui.onmessage = async (msg) => {
         data: data
       });
     }
+  } else if (msg.type === 'export-raw') {
+    // Export raw selection data without processing
+    const selection = pixso.currentPage.selection;
+    if (selection.length === 0) {
+      pixso.ui.postMessage({
+        type: 'error',
+        message: '请先选择要导出的元素'
+      });
+      return;
+    }
+
+    // Recursively extract all node properties
+    function extractRawNode(node, depth = 0) {
+      if (!node || depth > 10) return null;
+
+      const raw = {};
+      // Get all property names including inherited ones
+      const props = Object.keys(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(node)));
+      const ownProps = Object.keys(node);
+      const allProps = [...new Set([...props, ...ownProps])];
+
+      for (const key of allProps) {
+        try {
+          const value = node[key];
+          // Skip functions and undefined
+          if (typeof value === 'function' || value === undefined) continue;
+
+          if (value === null) {
+            raw[key] = null;
+          } else if (Array.isArray(value)) {
+            // Handle arrays (like children, fills, strokes, etc.)
+            raw[key] = value.map(item => {
+              if (item && typeof item === 'object' && item.type) {
+                // Likely a child node
+                return extractRawNode(item, depth + 1);
+              }
+              // Plain object or primitive
+              try {
+                return JSON.parse(JSON.stringify(item));
+              } catch {
+                return String(item);
+              }
+            });
+          } else if (typeof value === 'object') {
+            // Handle objects
+            try {
+              raw[key] = JSON.parse(JSON.stringify(value));
+            } catch {
+              raw[key] = String(value);
+            }
+          } else {
+            // Primitives
+            raw[key] = value;
+          }
+        } catch (e) {
+          // Some properties may throw when accessed
+        }
+      }
+      return raw;
+    }
+
+    const rawNodes = selection.map(node => extractRawNode(node));
+    pixso.ui.postMessage({
+      type: 'raw-result',
+      data: rawNodes
+    });
   } else if (msg.type === 'cancel') {
     pixso.closePlugin();
   }
