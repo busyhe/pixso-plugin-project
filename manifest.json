@@ -1,6 +1,6 @@
 {
-    "id": "pixso-page-exporter",
-    "name": "页面数据导出",
+    "id": "pixso-to-fabric",
+    "name": "pixso-to-fabric",
     "ui": "dist/ui.html",
     "main": "dist/main.js"
 }
