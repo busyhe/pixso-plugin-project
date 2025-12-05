@@ -1,6 +1,6 @@
 {
   "name": "pixso-plugin-project",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": "true",
   "description": "template vue3.0",
   "scripts": {
